@@ -1,5 +1,7 @@
 import os
 import sys
+
+import re
 import urllib3
 import requests
 from bs4 import BeautifulSoup
@@ -26,7 +28,7 @@ def get_directory(issue):
 
 if __name__ == '__main__':
 
-    src = 'https://raspberrypi.org/magpi-issues/'
+    src = 'https://magpi.raspberrypi.org/issues'
 
     if len(sys.argv) > 1:
         base = sys.argv[1]
@@ -37,7 +39,7 @@ if __name__ == '__main__':
     else:
         base = ''
     
-    # setup and request page
+    # setup and request initial page
     http = urllib3.PoolManager()
     r = requests.get(src)
 
@@ -45,34 +47,60 @@ if __name__ == '__main__':
     soup = BeautifulSoup(r.content, "html5lib")
     tags = soup('a')
 
-    # cycle thru webpage
+    # cycle thru webpage to find issues
     for hlink in tags:
 
         # create variable for full url
         issue = hlink.get('href', None)
 
+        # finds '/issues/xx/pdf' in url. these are the download links
+        pattern = r'\/issues\/\d+\/pdf'
+        matches = re.findall(pattern, issue)
+
+        is_pdf_download_link = len(matches) > 0
+
         # only follow hlinks with PDF in the url
-        if 'pdf' in issue:
+        if is_pdf_download_link:
             
-            # define the url for the issue
-            issue_link = src + issue
+            # define the url for the issue download page
+            issue_link = src + issue[7:]
 
-            # get sub-directory for issue destination
-            sub_dir = get_directory(issue)
-            dst = base + sub_dir
+            r2 = requests.get(issue_link)
 
-            # define issue path and replace special characters, if needed
-            issue_path = dst + issue
-            issue_path = issue_path.replace('%23', '#')
-            issue_path = issue_path.replace('%20', ' ')
+            # filter issue download page
+            soup2 = BeautifulSoup(r2.content, "html5lib")
+            tags2 = soup2('a')
 
-            # check if issue already exists in destination folder
-            issue_downloaded = os.path.exists(issue_path)
+            found_issue_link = False
+            for hlink in tags2:
+                # create variable for full url
+                issue_url = hlink.get('href', None)
+                
+                # if 'pdf' is in url, then this is the download link 
+                if 'pdf' in issue_url:
+                    issue_link = issue_url
+                    issue_link = issue_link[:issue_link.rfind('?')]
+                    
+                    found_issue_link = True
 
-            # if issue does not exist then download
-            if not issue_downloaded:
-                print('Downloading to: {}'.format(dst + issue))
-                cmd = 'wget -v --directory-prefix={} -a log.txt {}'.format(dst, issue_link)
-                os.system(cmd)
-            
-            # break
+                if found_issue_link:
+                    # get sub-directory for issue destination
+                    sub_dir = 'magpi-issues/'
+                    dst = base + sub_dir
+
+                    # get issue number
+                    issue_match = re.findall(r'\d+', issue)
+
+                    # define issue path at destination
+                    issue_path = dst + 'MagPi{}.pdf'.format(issue_match[0])
+
+                    # check if issue already exists in destination folder
+                    issue_downloaded = os.path.exists(issue_path)
+
+                    # if issue does not exist then download
+                    if not issue_downloaded:
+                        print('Downloading to: {}'.format(dst))
+                        cmd = 'wget -v --directory-prefix={} -a log.txt {}'.format(dst, issue_link)
+                        os.system(cmd)
+                    
+                    # break
