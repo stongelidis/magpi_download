@@ -79,7 +79,7 @@ if __name__ == '__main__':
                 # if 'pdf' is in url, then this is the download link 
                 if 'pdf' in issue_url:
                     issue_link = issue_url
-                    issue_link = issue_link[:issue_link.rfind('?')]
+                    issue_link = 'https://magpi.raspberrypi.org' + issue_link
                     
                     found_issue_link = True
 
