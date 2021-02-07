@@ -7,25 +7,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def get_directory(issue):
-    # sorts issue into directories by issue name
-
-    # example: MagPi83.pdf
-    # example: Essentials_AIY_Projects_Voice_v1.pdf
-    # example: Projects_Book_v1.pdf
-
-    if issue[:5] == 'MagPi':
-        return 'magpi-issues/'
-    
-    if issue[:8] == 'Projects':
-        return 'projects/'
-
-    if issue[:10] == 'Essentials':
-        return 'essentials/'
-
-    return 'other/'
-
-
 if __name__ == '__main__':
 
     src = 'https://magpi.raspberrypi.org/issues'
