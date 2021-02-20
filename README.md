@@ -1,5 +1,5 @@
 # Download MagPi Issues
-This script is used to download any MagPi issues found on the main page of [MagPi Magazine](https://magpi.raspberrypi.org/issues). The script will check to see if the magazine issue matches any previously downloaded files by checking the titles in the specified directory. 
+This script is used to download MagPi issues found on the [main page](https://magpi.raspberrypi.org/issues). It will avoid duplications by comparing the issue number on the MagPi homepage with the title of the files already saved in the user specified download directory.
 
 ## Running 
 To run the script use 
