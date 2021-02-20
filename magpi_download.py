@@ -1,6 +1,6 @@
 import os
 import sys
-
+import argparse
 import re
 import urllib3
 import requests
@@ -9,17 +9,19 @@ from bs4 import BeautifulSoup
 
 if __name__ == '__main__':
 
+    # base url for magpi magazines
     src = 'https://magpi.raspberrypi.org/issues'
 
-    if len(sys.argv) > 1:
-        base = sys.argv[1]
+    # parse arguments from user
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--download_directory', help='Directory for magpi files', default=os.getcwd())
+    args = parser.parse_args()
 
-        if base[-1] != '/':
-            base = base + '/'
+    # make sure directory path ends with forward slash
+    dst = args.download_directory
+    if dst[-1] != '/':
+        dst = dst + '/'
 
-    else:
-        base = ''
-    
     # setup and request initial page
     http = urllib3.PoolManager()
     r = requests.get(src)
@@ -65,10 +67,6 @@ if __name__ == '__main__':
                     found_issue_link = True
 
                 if found_issue_link:
-                    # get sub-directory for issue destination
-                    sub_dir = 'magpi-issues/'
-                    dst = base + sub_dir
-
                     # get issue number
                     issue_match = re.findall(r'\d+', issue)
 
