@@ -6,4 +6,4 @@ To run the script use
 ```
 python3 magpi_download.py -d <specify download directory>
 ```
-
+Use this script with cronjob to check the site periodically to automatically download new issues as they appear
